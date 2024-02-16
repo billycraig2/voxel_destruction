@@ -24,4 +24,21 @@ public class VoxelGrid : MonoBehaviour
             }
         }
     }
+
+    public bool IsVoxelActive(Vector3Int position)
+    {
+        if (position.x < 0 || position.x >= size ||
+            position.y < 0 || position.y >= size ||
+            position.z < 0 || position.z >= size)
+        {
+            return false;
+        }
+        return voxels[position.x, position.y, position.z].isActive;
+    }
+
+    public bool HasActiveNeighbour(Vector3Int voxelPosition, Vector3Int direction)
+    {
+        Vector3Int neighbourPosition = voxelPosition + direction;
+        return IsVoxelActive(neighbourPosition);
+    }
 }
