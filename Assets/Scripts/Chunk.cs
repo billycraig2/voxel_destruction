@@ -27,15 +27,31 @@ public class Chunk : MonoBehaviour
 
     private void InitializeVoxels()
     {
+        float worldX, worldZ, height;
         for (int x = 0; x < chunkSize; x++)
         {
-            for (int y = 0; y < chunkSize; y++)
+            for (int z = 0; z < chunkSize; z++)
             {
-                for (int z = 0; z < chunkSize; z++)
-                {
+                // Convert local chunk coordinates to world coordinates
+                worldX = x + transform.position.x;
+                worldZ = z + transform.position.z;
 
-                    voxels[x, y, z] = new Voxel(transform.position + new Vector3(x, y, z), Color.white);
-                    gizmoColor = new Color(Random.value, Random.value, Random.value, 0.4f);
+                // Use Perlin noise to determine the height at this x,z coordinate
+                height = Mathf.PerlinNoise(worldX * World.Instance.noiseScale, worldZ * World.Instance.noiseScale) * World.Instance.heightScale;
+
+                for (int y = 0; y < chunkSize; y++)
+                {
+                    // Convert the local y coordinate to a world y coordinate
+                    float worldY = y + transform.position.y;
+
+                    // Activate the voxel if its world y coordinate is less than the height determined by Perlin noise
+                    bool isActive = worldY <= height;
+
+                    voxels[x, y, z] = new Voxel(transform.position + new Vector3(x, y, z), Color.white, isActive);
+                    if (isActive)
+                    {
+                        gizmoColor = new Color(Random.value, Random.value, Random.value, 0.4f);
+                    }
                 }
             }
         }

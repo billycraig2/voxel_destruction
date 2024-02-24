@@ -12,6 +12,9 @@ public class World : MonoBehaviour
     public static World Instance { get; private set; }
     
     public Material VoxelMaterial;
+    
+    public float noiseScale = 0.1f;
+    public int heightScale = 10;
 
 
     private void Awake()

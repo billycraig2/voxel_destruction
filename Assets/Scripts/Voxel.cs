@@ -7,12 +7,19 @@ public class Voxel
 {
     public bool isActive;
     public Vector3 position; // position of the voxel in the grid
-    public Color color;
+    public VoxelType type;
+    public enum VoxelType
+    {
+        Grass,
+        Dirt,
+        Stone,
+        Air,
+    }
 
     public Voxel(Vector3 position, Color color, bool isActive = true)
     {
         this.position = position;
-        this.color = color;
+        this.type = type;
         this.isActive = isActive;
     }
 }
