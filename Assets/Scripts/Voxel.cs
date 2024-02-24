@@ -1,14 +1,18 @@
+using System.Numerics;
 using UnityEngine;
+using Vector3 = UnityEngine.Vector3;
 
 [System.Serializable]
 public class Voxel
 {
     public bool isActive;
-    
-    // other voxel properties
+    public Vector3 position; // position of the voxel in the grid
+    public Color color;
 
-    public Voxel(bool _isActive)
+    public Voxel(Vector3 position, Color color, bool isActive = true)
     {
-        isActive = _isActive;
+        this.position = position;
+        this.color = color;
+        this.isActive = isActive;
     }
 }
