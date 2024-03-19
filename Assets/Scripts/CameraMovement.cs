@@ -3,9 +3,9 @@ using System.Collections;
 
 public class FlyCamera : MonoBehaviour {
 
-    float mainSpeed = 100.0f; // Regular speed
+    float mainSpeed = 50.0f; // Regular speed
     float shiftAdd = 250.0f; // Multiplied by how long shift is held. Basically running
-    float maxShift = 1000.0f; // Maximum speed when holding shift
+    float maxShift = 100.0f; // Maximum speed when holding shift
     float camSens = 1f; // How sensitive it with mouse
 
     private float totalRun = 1.0f;

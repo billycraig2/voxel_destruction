@@ -3,6 +3,10 @@ using UnityEngine;
 
 public class Chunk : MonoBehaviour
 {
+    public GameObject voxelHighlight;
+    private GameObject voxelHighlightInstance;
+    private Quaternion lastCameraRotation;
+
     private Voxel[,,] voxels;
     private int chunkSize = 16;
     private Color gizmoColor;
@@ -18,6 +22,12 @@ public class Chunk : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if (voxelHighlight != null)
+        {
+            voxelHighlightInstance = Instantiate(voxelHighlight, Vector3.zero, Quaternion.identity);
+            voxelHighlightInstance.SetActive(false);
+        }
+        
         meshFilter = gameObject.AddComponent<MeshFilter>();
         meshRenderer = gameObject.AddComponent<MeshRenderer>();
         meshCollider = gameObject.AddComponent<MeshCollider>();
@@ -27,6 +37,8 @@ public class Chunk : MonoBehaviour
 
     void Update()
     {
+        HighlightVoxel();
+        
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -34,22 +46,44 @@ public class Chunk : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
-                Vector3 hitPoint = hit.point;
-                hitPoint -= transform.position;
+                Vector3 hitPointInsideVoxel = hit.point - hit.normal * 0.01f; 
+                Vector3 hitVoxelPosition = hitPointInsideVoxel - transform.position;
 
-                int x = Mathf.FloorToInt(hitPoint.x);
-                int y = Mathf.FloorToInt(hitPoint.y);
-                int z = Mathf.FloorToInt(hitPoint.z);
+                int x = Mathf.FloorToInt(hitVoxelPosition.x);
+                int y = Mathf.FloorToInt(hitVoxelPosition.y);
+                int z = Mathf.FloorToInt(hitVoxelPosition.z);
                 
-                if (x >= 0 && x < chunkSize && y >= 0 && y < chunkSize && z >= 0 && z < chunkSize) {
-                    // Ensure the indices are within the chunk's bounds
-                    if (voxels[x, y, z].isActive) {
-                        voxels[x, y, z].isActive = false; // Disable the clicked voxel
-                        GenerateMesh();
-                    }
+                if (x >= 0 && x < chunkSize && y >= 0 && y < chunkSize && z >= 0 && z < chunkSize)
+                {
+                    voxels[x, y, z].isActive = false;
+                    GenerateMesh();
                 }
             }
         }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                Vector3 hitPoint = hit.point;
+                Vector3 neighbourPosition = hitPoint - transform.position + hit.normal * 0.5f;
+
+                int x = Mathf.FloorToInt(neighbourPosition.x);
+                int y = Mathf.FloorToInt(neighbourPosition.y);
+                int z = Mathf.FloorToInt(neighbourPosition.z);
+                
+                if (x >= 0 && x < chunkSize && y >= 0 && y < chunkSize && z >= 0 && z < chunkSize)
+                {
+                    voxels[x, y, z].isActive = true;
+                    GenerateMesh();
+                }
+            }
+        }
+        
+        
     }
 
     private void InitializeVoxels()
@@ -258,6 +292,10 @@ public class Chunk : MonoBehaviour
 
     private void GenerateMesh()
     {
+        vertices.Clear();
+        triangles.Clear();
+        uvs.Clear();
+        
         IterateVoxels();
 
         Mesh mesh = new Mesh();
@@ -313,5 +351,39 @@ public class Chunk : MonoBehaviour
         // If out of bounds, consider the voxel inactive
         return false;
     }
+
+    
+    private void HighlightVoxel()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, 100.0f)) // Adjust the max distance as needed
+        {
+            Vector3 hitPoint = hit.point - hit.normal * 0.01f; // Nudge into the voxel
+            Vector3 hitVoxelPosition = hitPoint - transform.position;
+
+            int x = Mathf.FloorToInt(hitVoxelPosition.x);
+            int y = Mathf.FloorToInt(hitVoxelPosition.y);
+            int z = Mathf.FloorToInt(hitVoxelPosition.z);
+
+            if (x >= 0 && x < chunkSize && y >= 0 && y < chunkSize && z >= 0 && z < chunkSize)
+            {
+                if (voxelHighlightInstance != null)
+                {
+                    voxelHighlightInstance.SetActive(true);
+                    voxelHighlightInstance.transform.position = transform.position + new Vector3(x + 0.5f, y + 0.5f, z + 0.5f); // Center on voxel
+                }
+            }
+        }
+        else
+        {
+            if (voxelHighlightInstance != null)
+            { 
+                voxelHighlightInstance.SetActive(false);
+            }
+        }
+    }
 }
+
 
