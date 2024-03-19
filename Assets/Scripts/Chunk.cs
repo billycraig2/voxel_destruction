@@ -25,6 +25,33 @@ public class Chunk : MonoBehaviour
         GenerateMesh();
     }
 
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                Vector3 hitPoint = hit.point;
+                hitPoint -= transform.position;
+
+                int x = Mathf.FloorToInt(hitPoint.x);
+                int y = Mathf.FloorToInt(hitPoint.y);
+                int z = Mathf.FloorToInt(hitPoint.z);
+                
+                if (x >= 0 && x < chunkSize && y >= 0 && y < chunkSize && z >= 0 && z < chunkSize) {
+                    // Ensure the indices are within the chunk's bounds
+                    if (voxels[x, y, z].isActive) {
+                        voxels[x, y, z].isActive = false; // Disable the clicked voxel
+                        GenerateMesh();
+                    }
+                }
+            }
+        }
+    }
+
     private void InitializeVoxels()
     {
         float worldX, worldZ, height;

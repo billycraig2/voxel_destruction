@@ -1,79 +1,76 @@
 using UnityEngine;
+using System.Collections;
 
-public class CameraMovement : MonoBehaviour
-{
-    public float speed = 5.0f;
-    public float mouseSensitivity = 100.0f;
-    public LayerMask whatIsGround;
-    public float groundClearance = 1.0f;
+public class FlyCamera : MonoBehaviour {
 
-    private float xRotation = 0.0f;
-    private Transform cameraTransform;
+    float mainSpeed = 100.0f; // Regular speed
+    float shiftAdd = 250.0f; // Multiplied by how long shift is held. Basically running
+    float maxShift = 1000.0f; // Maximum speed when holding shift
+    float camSens = 1f; // How sensitive it with mouse
 
-    void Start()
-    {
+    private float totalRun = 1.0f;
+
+    void Start() {
+        // Lock the cursor to the center of the screen and hide it
         Cursor.lockState = CursorLockMode.Locked;
-        cameraTransform = transform.GetChild(0);
+        Cursor.visible = false;
     }
 
-    void Update()
-    {
-        Vector3 moveDirection = Vector3.zero;
+    void Update() {
+        // Calculate new rotation
+        float mouseX = Input.GetAxis("Mouse X") * camSens;
+        float mouseY = Input.GetAxis("Mouse Y") * camSens;
 
-        // Forward and backward movement
-        if (Input.GetKey(KeyCode.W))
-        {
-            moveDirection += cameraTransform.forward;
-        }
-        if (Input.GetKey(KeyCode.S))
-        {
-            moveDirection -= cameraTransform.forward;
-        }
+        Vector3 lookhere = new Vector3(-mouseY, mouseX, 0);
+        transform.eulerAngles = transform.eulerAngles + lookhere;
 
-        // Left and right movement
-        if (Input.GetKey(KeyCode.A))
-        {
-            moveDirection -= cameraTransform.right;
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            moveDirection += cameraTransform.right;
-        }
-        
-        moveDirection.Normalize();
-        Vector3 newPosition = transform.position + moveDirection * speed * Time.deltaTime;
-        
-        if (IsCloseToGround(newPosition))
-        {
-            moveDirection = Vector3.ProjectOnPlane(moveDirection, Vector3.up).normalized;
-            newPosition = transform.position + moveDirection * speed * Time.deltaTime;
-        }
+        // Keyboard commands
+        Vector3 p = GetBaseInput();
+        if (p.sqrMagnitude > 0) { // Only move while a direction key is pressed
+            if (Input.GetKey(KeyCode.LeftShift)) {
+                totalRun += Time.deltaTime;
+                p = p * totalRun * shiftAdd;
+                p.x = Mathf.Clamp(p.x, -maxShift, maxShift);
+                p.y = Mathf.Clamp(p.y, -maxShift, maxShift);
+                p.z = Mathf.Clamp(p.z, -maxShift, maxShift);
+            } else {
+                totalRun = Mathf.Clamp(totalRun * 0.5f, 1f, 1000f);
+                p = p * mainSpeed;
+            }
 
-        if (!IsBelowGround(newPosition))
-        {
-            transform.position = newPosition;
+            p = p * Time.deltaTime;
+            if (Input.GetKey(KeyCode.Space)) { // If player wants to move on X and Z axis only
+                transform.Translate(p);
+                Vector3 newPosition = transform.position;
+                newPosition.x = transform.position.x;
+                newPosition.z = transform.position.z;
+                transform.position = newPosition;
+            } else {
+                transform.Translate(p);
+            }
         }
 
-        // Mouse look
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
-
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90.0f, 90.0f);
-
-        cameraTransform.localRotation = Quaternion.Euler(xRotation, 0.0f, 0.0f);
-        transform.Rotate(Vector3.up * mouseX);
+        // Toggle cursor lock state with escape key
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            Cursor.lockState = Cursor.lockState == CursorLockMode.Locked ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = (Cursor.lockState != CursorLockMode.Locked);
+        }
     }
 
-    bool IsCloseToGround(Vector3 position)
-    {
-        RaycastHit hit;
-        return Physics.Raycast(position, Vector3.down, out hit, groundClearance, whatIsGround);
-    }
-
-    bool IsBelowGround(Vector3 position)
-    {
-        RaycastHit hit;
-        return Physics.Raycast(position, Vector3.down, out hit, 0.1f, whatIsGround);
+    private Vector3 GetBaseInput() { // Returns the basic values, if it's 0 than it's not active.
+        Vector3 p_Velocity = new Vector3();
+        if (Input.GetKey(KeyCode.W)) {
+            p_Velocity += new Vector3(0, 0, 1);
+        }
+        if (Input.GetKey(KeyCode.S)) {
+            p_Velocity += new Vector3(0, 0, -1);
+        }
+        if (Input.GetKey(KeyCode.A)) {
+            p_Velocity += new Vector3(-1, 0, 0);
+        }
+        if (Input.GetKey(KeyCode.D)) {
+            p_Velocity += new Vector3(1, 0, 0);
+        }
+        return p_Velocity;
     }
 }
