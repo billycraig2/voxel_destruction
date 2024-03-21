@@ -6,20 +6,17 @@ using Vector3 = UnityEngine.Vector3;
 public class Voxel
 {
     public bool isActive;
+    public bool isDestructible;
     public Vector3 position; // position of the voxel in the grid
-    public VoxelType type;
-    public enum VoxelType
-    {
-        Grass,
-        Dirt,
-        Stone,
-        Air,
-    }
+    public float mass; // mass of the voxel
+
+
 
     public Voxel(Vector3 position, Color color, bool isActive = true)
     {
         this.position = position;
-        this.type = type;
         this.isActive = isActive;
+        this.isDestructible = isDestructible;
+        this.mass = mass;
     }
 }

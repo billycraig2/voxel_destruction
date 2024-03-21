@@ -540,7 +540,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   worldSize: 8
   VoxelMaterial: {fileID: 2100000, guid: 1fd18109aa6667b409dc219af428d784, type: 2}
-  noiseScale: 0.05
+  noiseScale: 0.1
   heightScale: 10
 --- !u!114 &771758812
 MonoBehaviour:
