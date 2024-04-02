@@ -19,6 +19,9 @@ public class Chunk : MonoBehaviour
     private MeshRenderer meshRenderer;
     private MeshCollider meshCollider;
 
+    [SerializeField]
+    private GameObject voxelPrefab;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -83,6 +86,10 @@ public class Chunk : MonoBehaviour
             }
         }
         
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            TriggerExplosion();
+        }
         
     }
 
@@ -384,6 +391,49 @@ public class Chunk : MonoBehaviour
             }
         }
     }
+
+    private void TriggerExplosion()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // Cast a ray from the camera to the mouse position
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, 100f)) // Arbitrary distance of 100 units
+        {
+            Vector3 explosionCenter = hit.point; // The exact point of impact
+            float explosionRadius = 5f; // Define the radius of your explosion
+
+            // Convert the global hit point to local chunk coordinates
+            Vector3 localHitPoint = this.transform.InverseTransformPoint(explosionCenter);
+
+            // Explode the voxels in the chunk
+            ExplodeVoxels(localHitPoint, explosionRadius);
+        }
+    }
+
+    public void ExplodeVoxels(Vector3 explosionCenter, float explosionRadius)
+    {
+    
+        for (int x = 0; x < chunkSize; x++)
+        {
+            for (int y = 0; y < chunkSize; y++)
+            {
+                for (int z = 0; z < chunkSize; z++)
+                {
+                    Vector3 voxelPosition = new Vector3(x, y, z);
+                    float distance = Vector3.Distance(voxelPosition, explosionCenter);
+
+                    if (distance <= explosionRadius)
+                    {
+                        voxels[x, y, z].isActive = false;
+                    }
+                }
+            }
+        }
+
+        GenerateMesh();
+    }
 }
+    
+    
 
 
