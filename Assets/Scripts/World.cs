@@ -19,15 +19,14 @@ public class World : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+    
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     void Start()
@@ -60,22 +59,22 @@ public class World : MonoBehaviour
     
     public Chunk GetChunkAt(Vector3 globalPosition)
     {
-        // Calculate the chunk's starting position based on the global position
+        // Calculate the position of the chunk containing the global position
         Vector3Int chunkCoordinates = new Vector3Int(
             Mathf.FloorToInt(globalPosition.x / chunkSize) * chunkSize,
             Mathf.FloorToInt(globalPosition.y / chunkSize) * chunkSize,
             Mathf.FloorToInt(globalPosition.z / chunkSize) * chunkSize
         );
 
-        // Retrieve and return the chunk at the calculated position
+        // Return the chunk in calculated position
         if (chunks.TryGetValue(chunkCoordinates, out Chunk chunk))
         {
             return chunk;
         }
-
-        // Return null if no chunk exists at the position
+        
         return null;
     }
 
     // Additional methods for managing chunks, like loading and unloading, can be added here
+    
 }

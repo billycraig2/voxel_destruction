@@ -9,7 +9,7 @@ public class Voxel
     public bool isDestructible;
     public Vector3 position; // position of the voxel in the grid
     public float mass; // mass of the voxel
-
+    public float density; // density of the voxel
 
 
     public Voxel(Vector3 position, Color color, bool isActive = true)
@@ -18,5 +18,6 @@ public class Voxel
         this.isActive = isActive;
         this.isDestructible = isDestructible;
         this.mass = mass;
+        this.density = density;
     }
 }
